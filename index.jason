@@ -1,0 +1,200 @@
+{
+  "$jason": {
+    "head": {
+      "title": "Minimal Twitter",
+      "description": "Minimal Twitter Client. Opens up first link when a tweet is clicked.",
+      "icon": "https://cdn1.iconfinder.com/data/icons/logotypes/32/twitter-128.png",
+      "url": "https://plasticfm.herokuapp.com/things/2.json",
+      "website": {
+        "text": "Click here to learn how to add keys",
+        "url": "http://www.openjason.org/help/"
+      },
+      "actions": {
+        "$pull": {
+          "trigger": "reload"
+        },
+        "$load": {
+          "trigger": "reload"
+        },
+        "reload": {
+          "trigger": "twitter"
+        },
+        "twitter": {
+          "type": "$oauth.request",
+          "options": {
+            "version": "0",
+            "path": "/1.1/statuses/home_timeline.json",
+            "scheme": "https",
+            "host": "api.twitter.com"
+          },
+          "success": [
+            {
+              "{{#if Array.isArray($jason)}}": {
+                "type": "$render"
+              }
+            },
+            {
+              "{{#else}}": {
+                "type": "$oauth.unauth",
+                "options": {
+                  "host": "api.twitter.com",
+                  "version": "0"
+                },
+                "success": {
+                  "type": "$back"
+                }
+              }
+            }
+          ],
+          "error": {
+            "trigger": "error"
+          }
+        },
+        "error": {
+          "type": "$oauth.unauth",
+          "options": {
+            "host": "api.twitter.com",
+            "version": "0"
+          },
+          "success": {
+            "type": "$kill"
+          }
+        }
+      },
+      "templates": {
+        "body": {
+          "nav": {
+            "style": {
+              "background": "#1da1f2",
+              "status": "dark",
+              "color": "#ffffff"
+            },
+            "items": [
+              {
+                "type": "menu",
+                "image": "https://s3.amazonaws.com/www.textcast.co/icons/settings%402x.png",
+                "style": {
+                  "color": "#ffffff"
+                },
+                "action": {
+                  "type": "$oauth.destroy_auth",
+                  "options": {
+                    "version": "0",
+                    "host": "api.twitter.com"
+                  },
+                  "success": {
+                    "type": "$back"
+                  }
+                }
+              }
+            ]
+          },
+          "sections": [
+            {
+              "items": {
+                "{{#each $jason}}": [
+                  {
+                    "{{#if /https/.test(text)}}": {
+                      "type": "horizontal",
+                      "href": {
+                        "url": "{{text.replace(/.*(https:\\/\\/[/.a-zA-Z0-9]+).*/, '$1')}}",
+                        "view": "SafariView"
+                      },
+                      "style": {
+                        "padding": "10",
+                        "spacing": "10"
+                      },
+                      "components": [
+                        {
+                          "type": "image",
+                          "url": "{{user.profile_image_url_https}}",
+                          "style": {
+                            "width": "40",
+                            "corner_radius": "20"
+                          }
+                        },
+                        {
+                          "type": "vertical",
+                          "components": [
+                            {
+                              "type": "label",
+                              "style": {
+                                "font": "HelveticaNeue-CondensedBold"
+                              },
+                              "text": "{{user.screen_name}}"
+                            },
+                            {
+                              "type": "label",
+                              "style": {
+                                "font": "HelveticaNeue-Bold",
+                                "color": "#cacaca"
+                              },
+                              "text": "{{user.name}}"
+                            },
+                            {
+                              "type": "label",
+                              "text": "{{text.replace(/https:\\/\\/[/.a-zA-Z0-9]+/g, '')}}",
+                              "style": {
+                                "font": "HelveticaNeue"
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "{{#else}}": {
+                      "type": "horizontal",
+                      "style": {
+                        "padding": "10",
+                        "spacing": "10"
+                      },
+                      "components": [
+                        {
+                          "type": "image",
+                          "url": "{{user.profile_image_url_https}}",
+                          "style": {
+                            "width": "40",
+                            "corner_radius": "20"
+                          }
+                        },
+                        {
+                          "type": "vertical",
+                          "components": [
+                            {
+                              "type": "label",
+                              "style": {
+                                "font": "HelveticaNeue-CondensedBold"
+                              },
+                              "text": "{{user.screen_name}}"
+                            },
+                            {
+                              "type": "label",
+                              "style": {
+                                "font": "HelveticaNeue-Bold",
+                                "color": "#cacaca"
+                              },
+                              "text": "{{user.name}}"
+                            },
+                            {
+                              "type": "label",
+                              "text": "{{text.replace(/https:\\/\\/[/.a-zA-Z0-9]+/g, '>>')}}",
+                              "style": {
+                                "font": "HelveticaNeue"
+                              }
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
